@@ -6,9 +6,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class Data {
     private String state;
     private String district;
+    private String market;
     private String commodity;
-    private String arrival_date;
     private String variety;
+    private String arrival_date;
     private String min_price;
     private String max_price;
     private String modal_price;
@@ -29,6 +30,14 @@ public class Data {
         this.district = district;
     }
 
+    public String getMarket() {
+        return market;
+    }
+
+    public void setMarket(String market) {
+        this.market = market;
+    }
+
     public String getCommodity() {
         return commodity;
     }
@@ -37,20 +46,20 @@ public class Data {
         this.commodity = commodity;
     }
 
-    public String getArrival_date() {
-        return arrival_date;
-    }
-
-    public void setArrival_date(String arrival_date) {
-        this.arrival_date = arrival_date;
-    }
-
     public String getVariety() {
         return variety;
     }
 
     public void setVariety(String variety) {
         this.variety = variety;
+    }
+
+    public String getArrival_date() {
+        return arrival_date;
+    }
+
+    public void setArrival_date(String arrival_date) {
+        this.arrival_date = arrival_date;
     }
 
     public String getMin_price() {

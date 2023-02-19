@@ -1,6 +1,7 @@
 package com.example.MarketInsights.model;
 
 
+import com.example.MarketInsights.dao.CommodityPriceRepository;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,22 +15,28 @@ public class Commodity {
     private String id;
     private String state;
     private String district;
+    private String market;
     private String commodity;
-    private String arrival_date;
     private String variety;
-    private String min_price;
-    private String max_price;
-    private String modal_price;
+    private ArrayList<CommodityPrice> modal_price;
 
-    public Commodity(String id, String state, String district, String commodity, String arrival_date, String variety, String min_price, String max_price, String modal_price) {
+
+    public Commodity(String id, String state, String district, String market, String commodity, String variety, ArrayList<CommodityPrice> modal_price) {
         this.id = id;
         this.state = state;
         this.district = district;
+        this.market = market;
         this.commodity = commodity;
-        this.arrival_date = arrival_date;
         this.variety = variety;
-        this.min_price = min_price;
-        this.max_price = max_price;
+        this.modal_price = modal_price;
+    }
+
+
+    public ArrayList<CommodityPrice> getModal_price() {
+        return modal_price;
+    }
+
+    public void setModal_price(ArrayList<CommodityPrice> modal_price) {
         this.modal_price = modal_price;
     }
 }
