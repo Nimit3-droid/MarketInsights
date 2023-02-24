@@ -31,6 +31,11 @@ public class ServiceLayer {
     @Autowired
     private CommodityPriceRepository commodityPriceRepository;
 
+    /**
+     *
+     * @param limit
+     * @return
+     */
     public Records consumeAPILimit(String limit){
         Records response = restTemplate.getForEntity(
                 url+"?api-key="+apiKey+"&format="+format+"&limit="+limit,Records.class
@@ -38,6 +43,12 @@ public class ServiceLayer {
 
         return response;
     }
+
+    /**
+     *
+     * @param state
+     * @return
+     */
     public Records consumeAPIState(String state){
         Records response = restTemplate.getForEntity(
                 url+"?api-key="+apiKey+"&format="+format+"&limit="+defaultLimit+"&filters[state]="+state,Records.class
@@ -46,6 +57,28 @@ public class ServiceLayer {
         return response;
     }
 
+    /**
+     *
+     * @param state
+     * @param district
+     * @param market
+     * @param commodity
+     * @param variety
+     * @return
+     */
+    public Records consumeAPIMandi(String state,String district,String market, String commodity, String variety){
+        Records response = restTemplate.getForEntity(
+                url+"?api-key="+apiKey+"&format="+format+"&limit="+defaultLimit+"&filters[state]="+state+"&filters[district]="+district+"&filters[market]="+market+"&filters[commodity]="+commodity+"&filters[variety]="+variety,Records.class
+        ).getBody();
+
+        return response;
+    }
+
+    /**
+     *
+     * @return
+     * @throws ParseException
+     */
     public Records consumeAPIRef() throws ParseException {
         Records response = restTemplate.getForEntity(
                 url+"?api-key="+apiKey+"&format="+format+"&limit="+defaultLimit+"&filters[state]=Kerala",Records.class
@@ -56,8 +89,8 @@ public class ServiceLayer {
             boolean exists = commodityRepository.existsById(id);
             String strDate = record.getArrival_date();
             int price = Integer.parseInt(record.getModal_price());
-            int min_price=Integer.parseInt(record.getMin_price());
-            int max_price=Integer.parseInt(record.getMax_price());
+            int min_price=Integer.parseInt((record.getMin_price().equals("NA"))?record.getModal_price():record.getMin_price());
+            int max_price=Integer.parseInt((record.getMax_price().equals("NA"))?record.getModal_price():record.getMax_price());
             Date date = new SimpleDateFormat("dd/mm/yyyy").parse(strDate);
             String commodityPriceId=id+strDate;
             CommodityPrice newPrice=new CommodityPrice(commodityPriceId,date,price,min_price,max_price);

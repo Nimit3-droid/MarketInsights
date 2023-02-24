@@ -12,7 +12,6 @@ import java.util.ArrayList;
 
 @Service
 public class CommodityInsightsService {
-
     private final RestTemplate restTemplate;
 
     @Autowired
@@ -26,6 +25,12 @@ public class CommodityInsightsService {
     private CommodityPriceRepository commodityPriceRepository;
 
     //change in price from previous day
+
+    /**
+     *
+     * @param id
+     * @return
+     */
     public int findChangeInPrice(String id){
        int changeInPrice=0;
        Commodity commodity = commodityRepository.findById(id).get();
@@ -40,9 +45,15 @@ public class CommodityInsightsService {
 
 
     //max and min price in past d days
+
+    /**
+     *
+     * @param id
+     * @param days
+     * @return
+     */
     public ArrayList<Integer> findMaxMinPricePastDays(String id, int days){
         Commodity commodity = commodityRepository.findById(id).get();
-
         ArrayList<CommodityPrice> priceList=commodity.getModal_price();
         int sizeOfList = priceList.size();
         int min=Integer.MAX_VALUE;
@@ -59,7 +70,28 @@ public class CommodityInsightsService {
         return max_min;
 
     }
+    //average price of past d days
 
+    /**
+     *
+     * @param id
+     * @param days
+     * @return
+     */
+    public int findAveragePricePastDays(String id, int days){
+        Commodity commodity = commodityRepository.findById(id).get();
+        ArrayList<CommodityPrice> priceList=commodity.getModal_price();
+        int sizeOfList = priceList.size();
+        int index=sizeOfList-1;
+        int totalPrice=0;
+        while(index>=Math.max(sizeOfList-days,0)){
+            totalPrice+=priceList.get(index).getPrice();
+            index--;
+        }
+        int average=(sizeOfList>0)?totalPrice/sizeOfList:0;
+        return average;
+
+    }
     //change in price of same date of previous month,year
 
 

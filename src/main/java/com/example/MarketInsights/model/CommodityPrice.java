@@ -11,6 +11,14 @@ import java.util.Date;
 @Document
 public class CommodityPrice {
 
+    /**
+     *
+     * @param id
+     * @param date
+     * @param price
+     * @param max_price
+     * @param min_price
+     */
     public CommodityPrice(String id, Date date, int price, int max_price, int min_price) {
         this.id = id;
         this.date = date;

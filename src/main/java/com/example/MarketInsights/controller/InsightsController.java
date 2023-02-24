@@ -17,15 +17,38 @@ public class InsightsController {
         this.commodityInsightsService = commodityInsightsService;
     }
 
-    @GetMapping("/api/insights/getCommodity/{id}")
+    /**
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/api/insights/change/{id}")
     public int getCommodityId(@PathVariable String id){
         int valueChanged = commodityInsightsService.findChangeInPrice(id);
         return valueChanged;
     }
 
-    @GetMapping("/api/insights/getCommodity/{id}/{days}")
+    /**
+     *
+     * @param id
+     * @param days
+     * @return
+     */
+    @GetMapping("/api/insights/max_min/{id}/{days}")
     public ArrayList<Integer> getCommodityMax_Min(@PathVariable String id, @PathVariable int days){
         ArrayList<Integer> max_min = commodityInsightsService.findMaxMinPricePastDays(id,days);
         return max_min;
+    }
+
+    /**
+     *
+     * @param id
+     * @param days
+     * @return
+     */
+    @GetMapping("/api/insights/average/{id}/{days}")
+    public int getCommodityAverage(@PathVariable String id,@PathVariable int days){
+        int averagePrice = commodityInsightsService.findAveragePricePastDays(id,days);
+        return averagePrice;
     }
 }
