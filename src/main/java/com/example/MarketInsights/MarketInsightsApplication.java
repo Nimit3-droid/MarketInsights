@@ -13,4 +13,6 @@ public class MarketInsightsApplication {
 		SpringApplication.run(MarketInsightsApplication.class, args);
 	}
 
+
+
 }

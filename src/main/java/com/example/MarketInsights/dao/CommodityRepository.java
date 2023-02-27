@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.repository.Query;
 
 import java.util.List;
 public interface CommodityRepository extends MongoRepository<Commodity,String> {
+
     /**
      *
      * @param state
@@ -55,6 +56,6 @@ public interface CommodityRepository extends MongoRepository<Commodity,String> {
      * @return
      */
     @Query("{state: ?0, district: ?1, market: ?2, commodity: ?3, variety: ?4}")
-    List<Commodity> getCommodityByVariety(String state, String district, String market, String commodity, String variety);
+    Commodity getCommodityByVariety(String state, String district, String market, String commodity, String variety);
 
 }

@@ -11,8 +11,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.util.List;
+import java.util.Set;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("/api")
 public class HomeController {
     private final ServiceLayer serviceLayer;
 
@@ -77,7 +80,7 @@ public class HomeController {
      *
      * @return
      */
-    @GetMapping("/api/getCommodity")
+    @GetMapping("/getAllCommodity")
     public List<Commodity> getCommodity(){
         return commodityRepository.findAll();
     }
@@ -87,7 +90,7 @@ public class HomeController {
      * @param state
      * @return
      */
-    @GetMapping("/api/getCommodity/{state}")
+    @GetMapping("/getCommodity/{state}")
     public List<Commodity> getCommodityState(@PathVariable String state){
         return commodityRepository.getCommodityByState(state);
     }
@@ -98,7 +101,7 @@ public class HomeController {
      * @param district
      * @return
      */
-    @GetMapping("/api/getCommodity/{state}/{district}")
+    @GetMapping("/getCommodity/{state}/{district}")
     public List<Commodity> getCommodityDistrict(@PathVariable String state,@PathVariable String district){
         return commodityRepository.getCommodityByDistrict(state,district);
     }
@@ -110,7 +113,7 @@ public class HomeController {
      * @param market
      * @return
      */
-    @GetMapping("/api/getCommodity/{state}/{district}/{market}")
+    @GetMapping("/getCommodity/{state}/{district}/{market}")
     public List<Commodity> getCommodityMarket(@PathVariable String state,@PathVariable String district, @PathVariable String market){
         return commodityRepository.getCommodityByMarket(state,district,market);
     }
@@ -123,7 +126,7 @@ public class HomeController {
      * @param commodity
      * @return
      */
-    @GetMapping("/api/getCommodity/{state}/{district}/{market}/{commodity}")
+    @GetMapping("/getCommodity/{state}/{district}/{market}/{commodity}")
     public List<Commodity> getCommodityName(@PathVariable String state,@PathVariable String district, @PathVariable String market,@PathVariable String commodity){
         return commodityRepository.getCommodityByName(state,district,market,commodity);
     }
@@ -137,9 +140,77 @@ public class HomeController {
      * @param variety
      * @return
      */
-    @GetMapping("/api/getCommodity/{state}/{district}/{market}/{commodity}/{variety}")
-    public List<Commodity> getCommodityName(@PathVariable String state,@PathVariable String district, @PathVariable String market,@PathVariable String commodity,@PathVariable String variety){
+    @GetMapping("/getCommodity/{state}/{district}/{market}/{commodity}/{variety}")
+    public Commodity getCommodityName(@PathVariable String state,@PathVariable String district, @PathVariable String market,@PathVariable String commodity,@PathVariable String variety){
         return commodityRepository.getCommodityByVariety(state,district,market,commodity,variety);
+    }
+
+
+    /**
+     *
+     * @param commodityId
+     * @return
+     */
+    @GetMapping("/getCommodity/{id}")
+    public Commodity getCommodityNam(@PathVariable("id") String commodityId){
+        return commodityRepository.findById(commodityId).get();
+
+    }
+
+
+    /**
+     *
+     * @return
+     */
+    @GetMapping("/getStates")
+    public Set<String> getStates(){
+        return serviceLayer.getStatesList();
+    }
+
+    /**
+     *
+     * @param state
+     * @return
+     */
+    @GetMapping("/getDistricts/{state}")
+    public Set<String> getDistricts(@PathVariable String state){
+        return serviceLayer.getDistrictList(state);
+    }
+
+    /**
+     *
+     * @param state
+     * @param district
+     * @return
+     */
+    @GetMapping("/getMarkets/{state}/{district}")
+    public Set<String> getMarkets(@PathVariable String state,@PathVariable String district){
+        return serviceLayer.getMarketList(state,district);
+    }
+
+    /**
+     *
+     * @param state
+     * @param district
+     * @param market
+     * @return
+     */
+    @GetMapping("/getCommodities/{state}/{district}/{market}")
+    public Set<String> getCommodities(@PathVariable String state,@PathVariable String district,@PathVariable String market){
+        return serviceLayer.getCommodityList(state,district,market);
+    }
+
+    /**
+     *
+     * @param state
+     * @param district
+     * @param market
+     * @param commodity
+     * @return
+     */
+    @GetMapping("/getVarieties/{state}/{district}/{market}/{commodity}")
+    public Set<String> getVarieties(@PathVariable String state,@PathVariable String district,@PathVariable String market,@PathVariable String commodity){
+        return serviceLayer.getVarietyList(state,district,market,commodity);
     }
 
 

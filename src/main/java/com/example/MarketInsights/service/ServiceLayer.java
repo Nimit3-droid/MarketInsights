@@ -7,13 +7,13 @@ import com.example.MarketInsights.dao.CommodityPriceRepository;
 import com.example.MarketInsights.model.Commodity;
 import com.example.MarketInsights.model.CommodityPrice;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 
 @Service
 public class ServiceLayer {
@@ -93,7 +93,7 @@ public class ServiceLayer {
             int max_price=Integer.parseInt((record.getMax_price().equals("NA"))?record.getModal_price():record.getMax_price());
             Date date = new SimpleDateFormat("dd/mm/yyyy").parse(strDate);
             String commodityPriceId=id+strDate;
-            CommodityPrice newPrice=new CommodityPrice(commodityPriceId,date,price,min_price,max_price);
+            CommodityPrice newPrice=new CommodityPrice(commodityPriceId,date,price,max_price,min_price);
             commodityPriceRepository.save(newPrice);
             if(!exists){
                 ArrayList<CommodityPrice> priceList=new ArrayList<>();
@@ -116,5 +116,52 @@ public class ServiceLayer {
         }
         return response;
     }
+
+    public Set<String> getStatesList(){
+        List<Commodity> response = commodityRepository.findAll(Sort.by(Sort.Direction.ASC, "state"));
+        Set<String> states = new HashSet<>();
+        for(Commodity commodity : response){
+            states.add(commodity.getState());
+        }
+        return states;
+    }
+
+    public Set<String> getDistrictList(String stateName){
+        List<Commodity> response = commodityRepository.getCommodityByState(stateName);
+        Set<String> districts = new TreeSet<>();
+        for(Commodity commodity : response){
+            districts.add(commodity.getDistrict());
+        }
+        return districts;
+    }
+
+    public Set<String> getMarketList(String stateName,String districtName){
+        List<Commodity> response = commodityRepository.getCommodityByDistrict(stateName,districtName);
+        Set<String> markets = new TreeSet<>();
+        for(Commodity commodity : response){
+            markets.add(commodity.getMarket());
+        }
+        return markets;
+    }
+
+    public Set<String> getCommodityList(String stateName,String districtName,String marketName){
+        List<Commodity> response = commodityRepository.getCommodityByMarket(stateName,districtName,marketName);
+        Set<String> commodities = new TreeSet<>();
+        for(Commodity commodity : response){
+            commodities.add(commodity.getCommodity());
+        }
+        return commodities;
+    }
+
+    public Set<String> getVarietyList(String stateName,String districtName,String marketName,String commodityName){
+        List<Commodity> response = commodityRepository.getCommodityByName(stateName,districtName,marketName,commodityName);
+        Set<String> varieties = new TreeSet<>();
+        for(Commodity commodity : response){
+            varieties.add(commodity.getVariety());
+        }
+        return varieties;
+    }
+
+
 
 }
