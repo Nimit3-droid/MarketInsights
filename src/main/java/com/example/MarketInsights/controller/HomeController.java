@@ -141,19 +141,19 @@ public class HomeController {
      * @return
      */
     @GetMapping("/getCommodity/{state}/{district}/{market}/{commodity}/{variety}")
-    public Commodity getCommodityName(@PathVariable String state,@PathVariable String district, @PathVariable String market,@PathVariable String commodity,@PathVariable String variety){
+    public Commodity getCommodityVarietyName(@PathVariable String state,@PathVariable String district, @PathVariable String market,@PathVariable String commodity,@PathVariable String variety){
         return commodityRepository.getCommodityByVariety(state,district,market,commodity,variety);
     }
 
 
     /**
      *
-     * @param commodityId
+     * @param id
      * @return
      */
-    @GetMapping("/getCommodity/{id}")
-    public Commodity getCommodityNam(@PathVariable("id") String commodityId){
-        return commodityRepository.findById(commodityId).get();
+    @GetMapping("/getCommodityById/{id}")
+    public Commodity getCommodityByID(@PathVariable String id){
+        return commodityRepository.findById(id).get();
 
     }
 
@@ -162,7 +162,7 @@ public class HomeController {
      *
      * @return
      */
-    @GetMapping("/getStates")
+    @GetMapping("/getStates/")
     public Set<String> getStates(){
         return serviceLayer.getStatesList();
     }
