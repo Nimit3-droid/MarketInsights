@@ -91,9 +91,9 @@ public class ServiceLayer {
             int price = Integer.parseInt(record.getModal_price());
             int min_price=Integer.parseInt((record.getMin_price().equals("NA"))?record.getModal_price():record.getMin_price());
             int max_price=Integer.parseInt((record.getMax_price().equals("NA"))?record.getModal_price():record.getMax_price());
-            Date date = new SimpleDateFormat("dd/mm/yyyy").parse(strDate);
+//            Date date = new SimpleDateFormat("dd/mm/yyyy").parse(strDate);
             String commodityPriceId=id+strDate;
-            CommodityPrice newPrice=new CommodityPrice(commodityPriceId,date,price,max_price,min_price);
+            CommodityPrice newPrice=new CommodityPrice(commodityPriceId,strDate,price,max_price,min_price);
             commodityPriceRepository.save(newPrice);
             if(!exists){
                 ArrayList<CommodityPrice> priceList=new ArrayList<>();

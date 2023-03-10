@@ -27,6 +27,11 @@ public class HomeController {
     @Autowired
     private CommodityRepository commodityRepository;
 
+    @GetMapping("/")
+    public String getDataLimit(){
+        return "Home";
+    }
+
     /**
      *
      * @param limit

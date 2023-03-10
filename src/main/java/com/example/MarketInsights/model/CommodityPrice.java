@@ -19,7 +19,7 @@ public class CommodityPrice {
      * @param max_price
      * @param min_price
      */
-    public CommodityPrice(String id, Date date, int price, int max_price, int min_price) {
+    public CommodityPrice(String id, String date, int price, int max_price, int min_price) {
         this.id = id;
         this.date = date;
         this.price = price;
@@ -29,7 +29,7 @@ public class CommodityPrice {
 
     @Id
     private String id;
-    private Date date;
+    private String date;
     private int price;
     private  int max_price;
     private int min_price;
