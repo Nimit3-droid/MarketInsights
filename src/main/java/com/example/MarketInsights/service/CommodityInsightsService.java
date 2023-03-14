@@ -78,17 +78,19 @@ public class CommodityInsightsService {
      * @param days
      * @return
      */
-    public int findAveragePricePastDays(String id, int days){
+    public double findAveragePricePastDays(String id, int days){
         Commodity commodity = commodityRepository.findById(id).get();
         ArrayList<CommodityPrice> priceList=commodity.getModal_price();
         int sizeOfList = priceList.size();
         int index=sizeOfList-1;
-        int totalPrice=0;
+        double totalPrice=0;
+        int totaldays=0;
         while(index>=Math.max(sizeOfList-days,0)){
             totalPrice+=priceList.get(index).getPrice();
+            totaldays++;
             index--;
         }
-        int average=(sizeOfList>0)?totalPrice/sizeOfList:0;
+        double average=(sizeOfList>0)?totalPrice/totaldays:0;
         return average;
 
     }

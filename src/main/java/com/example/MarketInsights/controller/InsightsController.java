@@ -2,14 +2,12 @@ package com.example.MarketInsights.controller;
 
 import com.example.MarketInsights.service.CommodityInsightsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/insights")
 public class InsightsController {
     private final CommodityInsightsService commodityInsightsService;
@@ -49,8 +47,8 @@ public class InsightsController {
      * @return
      */
     @GetMapping("/average/{id}/{days}")
-    public int getCommodityAverage(@PathVariable String id,@PathVariable int days){
-        int averagePrice = commodityInsightsService.findAveragePricePastDays(id,days);
+    public double getCommodityAverage(@PathVariable String id,@PathVariable int days){
+        double averagePrice = commodityInsightsService.findAveragePricePastDays(id,days);
         return averagePrice;
     }
 
