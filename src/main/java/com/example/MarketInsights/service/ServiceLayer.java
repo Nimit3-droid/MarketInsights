@@ -100,7 +100,9 @@ public class ServiceLayer {
                 priceList.add(newPrice);
 
                 Commodity commodity=new Commodity(id,record.getState(),record.getDistrict(),record.getMarket(),record.getCommodity(), record.getVariety(),priceList);
-                commodityRepository.save(commodity);
+                System.out.println(commodity.getId()+"\n"+commodity.getState()+"\n"+commodity.getDistrict()+"\n"+commodity.getMarket()+"\n"+commodity.getCommodity()+"\n"+commodity.getVariety()+"\n"+commodityPriceId+"\n"+strDate+"\n"+price+"\n"+max_price+"\n"+min_price);
+//                System.out.println("--------------------------------------------------");
+//                commodityRepository.save(commodity);
             }else{
                 Commodity commodity = commodityRepository.findById(id).get();
                 ArrayList<CommodityPrice> priceList=commodity.getModal_price();
