@@ -1,17 +1,21 @@
 package com.example.MarketInsights.controller;
 
+
+import com.example.MarketInsights.VO.QueryResult;
 import com.example.MarketInsights.VO.Records;
-import com.example.MarketInsights.dao.CommodityRepository;
-import com.example.MarketInsights.model.Commodity;
+import com.example.MarketInsights.model.Measurement;
+import com.example.MarketInsights.model.MetaData;
 import com.example.MarketInsights.service.ServiceLayer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Meta;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -24,199 +28,73 @@ public class HomeController {
         this.serviceLayer = serviceLayer;
     }
 
-    @Autowired
-    private CommodityRepository commodityRepository;
-
     @GetMapping("/")
     public String getDataLimit(){
         return "Home";
     }
 
-    /**
-     *
-     * @param limit
-     * @return
-     */
-    @GetMapping("/all/{limit}")
-    public ResponseEntity<Records> getDataLimit(@PathVariable String limit){
-        ResponseEntity<Records> records = new ResponseEntity<Records>(serviceLayer.consumeAPILimit(limit), HttpStatus.OK);
-
-        return records;
+    @GetMapping("/save")
+    public String testAPICont(){
+        serviceLayer.testAPI();
+        return "Home";
     }
 
-    /**
-     *
-     * @param stateName
-     * @return
-     */
-    @GetMapping("/state/{stateName}")
-    public ResponseEntity<Records> getDataState(@PathVariable String stateName){
-        ResponseEntity<Records> records = new ResponseEntity<Records>(serviceLayer.consumeAPIState(stateName), HttpStatus.OK);
-        return records;
+    @GetMapping("/queryRange/{startDate}/{endDate}/{state}/{district}/{market}/{commodity}/{variety}")
+    public QueryResult queryInRange(@PathVariable String startDate,@PathVariable String endDate,@PathVariable String state,@PathVariable String district,@PathVariable String market,@PathVariable String commodity,@PathVariable String variety){
+        List<Measurement> records = new ResponseEntity<List<Measurement>>(serviceLayer.getQueryInRange(startDate,endDate,state,district,market,commodity,variety), HttpStatus.OK).getBody();
+        if(records.size()==0){
+            return new QueryResult();
+        }
+
+        List<Instant> dates=new ArrayList<>();
+        List<Double> prices=new ArrayList<>();
+        List<Double> max_prices=new ArrayList<>();
+        List<Double> min_prices=new ArrayList<>();
+        for(Measurement measure:records){
+            dates.add(measure.getTimestamp());
+            prices.add(measure.getData().getPrice());
+            max_prices.add(measure.getData().getMax_pr());
+            min_prices.add(measure.getData().getMin_pr());
+        }
+        MetaData metaData=records.get(0).getMetaData();
+        String stateName=metaData.state();
+        String districtName=metaData.district();
+        String marketName=metaData.market();
+        String commodityName=metaData.commodity();
+        String varietyName=metaData.variety();
+        QueryResult qr=new QueryResult(dates,stateName,districtName, marketName, commodityName, varietyName,min_prices,max_prices,prices);
+        return qr;
     }
 
-    /**
-     *
-     * @param state
-     * @param district
-     * @param market
-     * @param commodity
-     * @param variety
-     * @return
-     */
-    @GetMapping("/getItem/{state}/{district}/{market}/{commodity}/{variety}")
-    public ResponseEntity<Records> getData(@PathVariable String state,@PathVariable String district,@PathVariable String market, @PathVariable String  commodity, @PathVariable String variety){
-        ResponseEntity<Records> records = new ResponseEntity<Records>(serviceLayer.consumeAPIMandi(state,district,market,commodity,variety), HttpStatus.OK);
-        return records;
+    @GetMapping("/queryAll/{state}/{district}/{market}/{commodity}/{variety}")
+    public QueryResult queryAllPriceList(@PathVariable String state,@PathVariable String district,@PathVariable String market,@PathVariable String commodity,@PathVariable String variety){
+        List<Measurement> records = new ResponseEntity<List<Measurement>>(serviceLayer.getAllPrice(state,district,market,commodity,variety), HttpStatus.OK).getBody();
+        if(records.size()==0){
+            return new QueryResult();
+        }
+        List<Instant> dates=new ArrayList<>();
+        List<Double> prices=new ArrayList<>();
+        List<Double> max_prices=new ArrayList<>();
+        List<Double> min_prices=new ArrayList<>();
+        for(Measurement measure:records){
+            dates.add(measure.getTimestamp());
+            prices.add(measure.getData().getPrice());
+            max_prices.add(measure.getData().getMax_pr());
+            min_prices.add(measure.getData().getMin_pr());
+        }
+        MetaData metaData=records.get(0).getMetaData();
+        String stateName=metaData.state();
+        String districtName=metaData.district();
+        String marketName=metaData.market();
+        String commodityName=metaData.commodity();
+        String varietyName=metaData.variety();
+        QueryResult qr=new QueryResult(dates,stateName,districtName, marketName, commodityName, varietyName,min_prices,max_prices,prices);
+        return qr;
     }
-
-    /**
-     *
-     * @return
-     * @throws ParseException
-     */
     @GetMapping("/refresh")
-    public String getDataRef() throws ParseException {
+    public ResponseEntity<Records> getDataRef() throws ParseException {
         ResponseEntity<Records> records = new ResponseEntity<>(serviceLayer.consumeAPIRef(),HttpStatus.OK);
-        return "Commodity Refreshed";
+        return records;
     }
-
-    /**
-     *
-     * @return
-     */
-    @GetMapping("/getAllCommodity")
-    public List<Commodity> getCommodity(){
-        return commodityRepository.findAll();
-    }
-
-    /**
-     *
-     * @param state
-     * @return
-     */
-    @GetMapping("/getCommodity/{state}")
-    public List<Commodity> getCommodityState(@PathVariable String state){
-        return commodityRepository.getCommodityByState(state);
-    }
-
-    /**
-     *
-     * @param state
-     * @param district
-     * @return
-     */
-    @GetMapping("/getCommodity/{state}/{district}")
-    public List<Commodity> getCommodityDistrict(@PathVariable String state,@PathVariable String district){
-        return commodityRepository.getCommodityByDistrict(state,district);
-    }
-
-    /**
-     *
-     * @param state
-     * @param district
-     * @param market
-     * @return
-     */
-    @GetMapping("/getCommodity/{state}/{district}/{market}")
-    public List<Commodity> getCommodityMarket(@PathVariable String state,@PathVariable String district, @PathVariable String market){
-        return commodityRepository.getCommodityByMarket(state,district,market);
-    }
-
-    /**
-     *
-     * @param state
-     * @param district
-     * @param market
-     * @param commodity
-     * @return
-     */
-    @GetMapping("/getCommodity/{state}/{district}/{market}/{commodity}")
-    public List<Commodity> getCommodityName(@PathVariable String state,@PathVariable String district, @PathVariable String market,@PathVariable String commodity){
-        return commodityRepository.getCommodityByName(state,district,market,commodity);
-    }
-
-    /**
-     *
-     * @param state
-     * @param district
-     * @param market
-     * @param commodity
-     * @param variety
-     * @return
-     */
-    @GetMapping("/getCommodity/{state}/{district}/{market}/{commodity}/{variety}")
-    public Commodity getCommodityVarietyName(@PathVariable String state,@PathVariable String district, @PathVariable String market,@PathVariable String commodity,@PathVariable String variety){
-        return commodityRepository.getCommodityByVariety(state,district,market,commodity,variety);
-    }
-
-
-    /**
-     *
-     * @param id
-     * @return
-     */
-    @GetMapping("/getCommodityById/{id}")
-    public Commodity getCommodityByID(@PathVariable String id){
-        return commodityRepository.findById(id).get();
-
-    }
-
-
-    /**
-     *
-     * @return
-     */
-    @GetMapping("/getStates/")
-    public Set<String> getStates(){
-        return serviceLayer.getStatesList();
-    }
-
-    /**
-     *
-     * @param state
-     * @return
-     */
-    @GetMapping("/getDistricts/{state}")
-    public Set<String> getDistricts(@PathVariable String state){
-        return serviceLayer.getDistrictList(state);
-    }
-
-    /**
-     *
-     * @param state
-     * @param district
-     * @return
-     */
-    @GetMapping("/getMarkets/{state}/{district}")
-    public Set<String> getMarkets(@PathVariable String state,@PathVariable String district){
-        return serviceLayer.getMarketList(state,district);
-    }
-
-    /**
-     *
-     * @param state
-     * @param district
-     * @param market
-     * @return
-     */
-    @GetMapping("/getCommodities/{state}/{district}/{market}")
-    public Set<String> getCommodities(@PathVariable String state,@PathVariable String district,@PathVariable String market){
-        return serviceLayer.getCommodityList(state,district,market);
-    }
-
-    /**
-     *
-     * @param state
-     * @param district
-     * @param market
-     * @param commodity
-     * @return
-     */
-    @GetMapping("/getVarieties/{state}/{district}/{market}/{commodity}")
-    public Set<String> getVarieties(@PathVariable String state,@PathVariable String district,@PathVariable String market,@PathVariable String commodity){
-        return serviceLayer.getVarietyList(state,district,market,commodity);
-    }
-
 
 }

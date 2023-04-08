@@ -1,19 +1,24 @@
 package com.example.MarketInsights.service;
 
+
+import com.example.MarketInsights.VO.PriceContainer;
 import com.example.MarketInsights.VO.Data;
 import com.example.MarketInsights.VO.Records;
-import com.example.MarketInsights.dao.CommodityRepository;
-import com.example.MarketInsights.dao.CommodityPriceRepository;
-import com.example.MarketInsights.model.Commodity;
-import com.example.MarketInsights.model.CommodityPrice;
+import com.example.MarketInsights.dao.MeasurementRepository;
+import com.example.MarketInsights.model.Measurement;
+import com.example.MarketInsights.model.MetaData;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 
 @Service
 public class ServiceLayer {
@@ -27,143 +32,67 @@ public class ServiceLayer {
         this.restTemplate = restTemplate;
     }
     @Autowired
-    private CommodityRepository commodityRepository;
-    @Autowired
-    private CommodityPriceRepository commodityPriceRepository;
+    private MeasurementRepository measurementRepository;
 
-    /**
-     *
-     * @param limit
-     * @return
-     */
-    public Records consumeAPILimit(String limit){
-        Records response = restTemplate.getForEntity(
-                url+"?api-key="+apiKey+"&format="+format+"&limit="+limit,Records.class
-        ).getBody();
-
-        return response;
-    }
-
-    /**
-     *
-     * @param state
-     * @return
-     */
-    public Records consumeAPIState(String state){
-        Records response = restTemplate.getForEntity(
-                url+"?api-key="+apiKey+"&format="+format+"&limit="+defaultLimit+"&filters[state]="+state,Records.class
-        ).getBody();
-
-        return response;
-    }
-
-    /**
-     *
-     * @param state
-     * @param district
-     * @param market
-     * @param commodity
-     * @param variety
-     * @return
-     */
-    public Records consumeAPIMandi(String state,String district,String market, String commodity, String variety){
-        Records response = restTemplate.getForEntity(
-                url+"?api-key="+apiKey+"&format="+format+"&limit="+defaultLimit+"&filters[state]="+state+"&filters[district]="+district+"&filters[market]="+market+"&filters[commodity]="+commodity+"&filters[variety]="+variety,Records.class
-        ).getBody();
-
-        return response;
-    }
-
-    /**
-     *
-     * @return
-     * @throws ParseException
-     */
     public Records consumeAPIRef() throws ParseException {
         Records response = restTemplate.getForEntity(
                 url+"?api-key="+apiKey+"&format="+format+"&limit="+defaultLimit+"&filters[state]=Kerala",Records.class
         ).getBody();
         ArrayList<Data> records= (ArrayList<Data>) response.getRecords();
+        List<Measurement> measurements = new ArrayList<>();
         for(Data record: records){
-            String id=record.getState()+record.getDistrict()+record.getMarket()+record.getCommodity()+record.getVariety();
-            boolean exists = commodityRepository.existsById(id);
+//            String id=record.getState()+record.getDistrict()+record.getMarket()+record.getCommodity()+record.getVariety();
             String strDate = record.getArrival_date();
+            String year=strDate.substring(6),month=strDate.substring(3,5),day=strDate.substring(0,2);
             int price = Integer.parseInt(record.getModal_price());
             int min_price=Integer.parseInt((record.getMin_price().equals("NA"))?record.getModal_price():record.getMin_price());
             int max_price=Integer.parseInt((record.getMax_price().equals("NA"))?record.getModal_price():record.getMax_price());
-//            Date date = new SimpleDateFormat("dd/mm/yyyy").parse(strDate);
-            String commodityPriceId=id+strDate;
-            CommodityPrice newPrice=new CommodityPrice(commodityPriceId,strDate,price,max_price,min_price);
-            commodityPriceRepository.save(newPrice);
-            if(!exists){
-                ArrayList<CommodityPrice> priceList=new ArrayList<>();
-                priceList.add(newPrice);
+            MetaData metaData = new MetaData(record.getState(), record.getDistrict(), record.getMarket(), record.getCommodity(), record.getVariety());
 
-                Commodity commodity=new Commodity(id,record.getState(),record.getDistrict(),record.getMarket(),record.getCommodity(), record.getVariety(),priceList);
-                System.out.println(commodity.getId()+"\n"+commodity.getState()+"\n"+commodity.getDistrict()+"\n"+commodity.getMarket()+"\n"+commodity.getCommodity()+"\n"+commodity.getVariety()+"\n"+commodityPriceId+"\n"+strDate+"\n"+price+"\n"+max_price+"\n"+min_price);
-//                System.out.println("--------------------------------------------------");
-//                commodityRepository.save(commodity);
-            }else{
-                Commodity commodity = commodityRepository.findById(id).get();
-                ArrayList<CommodityPrice> priceList=commodity.getModal_price();
-                int sizeOfList = priceList.size();
-                String idPrice = priceList.get(sizeOfList-1).getId();
-                if(!idPrice.equals(commodityPriceId)){
-                    priceList.add(newPrice);
-                    commodity.setModal_price(priceList);
-                    commodityRepository.save(commodity);
-                }
-
-            }
+            Instant timestamp = Instant.parse(year+"-"+month+"-"+day+"T18:00:00.00Z");
+            PriceContainer data=new PriceContainer(price,min_price,max_price);
+            measurements.add(new Measurement(timestamp, metaData, data));
         }
+        measurementRepository.saveAll(measurements);
         return response;
     }
 
-    public Set<String> getStatesList(){
-        List<Commodity> response = commodityRepository.findAll(Sort.by(Sort.Direction.ASC, "state"));
-        Set<String> states = new HashSet<>();
-        for(Commodity commodity : response){
-            states.add(commodity.getState());
+
+
+
+    public void testAPI(){
+        MetaData metaData = new MetaData("Raj", "Jai","Tonk","Apple","Large");
+
+        // create 1000 measurements from 1 to 1000
+        List<Measurement> measurements = new ArrayList<>(5);
+
+        Instant timestamp = Instant.parse("2022-11-03T18:00:00.00Z");
+        float value = 100000;
+
+        for (int i = 5; i > 0; i--) {
+            PriceContainer data=new PriceContainer(i,i-10,i+10);
+            measurements.add(new Measurement(timestamp, metaData, data));
+            timestamp = timestamp.plus(24, ChronoUnit.HOURS);
+            value--;
         }
-        return states;
+
+        measurementRepository.saveAll(measurements);
     }
 
-    public Set<String> getDistrictList(String stateName){
-        List<Commodity> response = commodityRepository.getCommodityByState(stateName);
-        Set<String> districts = new TreeSet<>();
-        for(Commodity commodity : response){
-            districts.add(commodity.getDistrict());
-        }
-        return districts;
+    public List<Measurement> getQueryInRange(String start,String end,String state,String district,String market,String commodity,String variety){
+        MetaData metaData = new MetaData(state,district,market,commodity,variety);
+        Instant l = Instant.parse(start+"T18:00:00.00Z");
+        Instant r = Instant.parse(end+"T18:00:00.00Z");
+        List<Measurement> measurements = new ArrayList<>();
+        List<Measurement> mt=measurementRepository.findInInterval(metaData,l,r);
+        return mt;
     }
 
-    public Set<String> getMarketList(String stateName,String districtName){
-        List<Commodity> response = commodityRepository.getCommodityByDistrict(stateName,districtName);
-        Set<String> markets = new TreeSet<>();
-        for(Commodity commodity : response){
-            markets.add(commodity.getMarket());
-        }
-        return markets;
+    public List<Measurement> getAllPrice(String state,String district,String market,String commodity,String variety){
+        MetaData metaData = new MetaData(state,district,market,commodity,variety);
+        List<Measurement> mt=measurementRepository.findAllData(metaData);
+        return mt;
     }
-
-    public Set<String> getCommodityList(String stateName,String districtName,String marketName){
-        List<Commodity> response = commodityRepository.getCommodityByMarket(stateName,districtName,marketName);
-        Set<String> commodities = new TreeSet<>();
-        for(Commodity commodity : response){
-            commodities.add(commodity.getCommodity());
-        }
-        return commodities;
-    }
-
-    public Set<String> getVarietyList(String stateName,String districtName,String marketName,String commodityName){
-        List<Commodity> response = commodityRepository.getCommodityByName(stateName,districtName,marketName,commodityName);
-        Set<String> varieties = new TreeSet<>();
-        for(Commodity commodity : response){
-            varieties.add(commodity.getVariety());
-        }
-        return varieties;
-    }
-
 
 
 }
