@@ -36,12 +36,12 @@ public interface MeasurementRepository extends MongoRepository<Measurement, Stri
             }""")
     List<Measurement> findAllData(MetaData metaData);
 
-//    @Aggregation({
-//            "{ $match: { 'metaData.state': :#{#metaData.state()}," +
-//                    "    'metaData.district': :#{#metaData.district()}   } }",
-//            "{ $sort: { timestamp: -1 } }",
-//            "{ $limit: 1 }"})
-//    Measurement findLast(MetaData metaData);
+    @Aggregation({
+            "{ $match: { 'metaData.state': :#{#metaData.state()}," +
+                    "    'metaData.district': :#{#metaData.district()}   } }",
+            "{ $sort: { timestamp: -1 } }",
+            "{ $limit: 1 }"})
+    Measurement findLast(MetaData metaData);
 
 
 //    @Aggregation({

@@ -94,5 +94,11 @@ public class ServiceLayer {
         return mt;
     }
 
+    public Measurement getLastMeasurement(String state,String district,String market,String commodity,String variety){
+        MetaData metaData = new MetaData(state,district,market,commodity,variety);
+        Measurement mt=measurementRepository.findLast(metaData);
+        return mt;
+    }
+
 
 }

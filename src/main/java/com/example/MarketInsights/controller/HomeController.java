@@ -91,6 +91,29 @@ public class HomeController {
         QueryResult qr=new QueryResult(dates,stateName,districtName, marketName, commodityName, varietyName,min_prices,max_prices,prices);
         return qr;
     }
+
+    @GetMapping("/getLast/{state}/{district}/{market}/{commodity}/{variety}")
+    public QueryResult queryLast(@PathVariable String state,@PathVariable String district,@PathVariable String market,@PathVariable String commodity,@PathVariable String variety){
+        Measurement record = new ResponseEntity<Measurement>(serviceLayer.getLastMeasurement(state,district,market,commodity,variety), HttpStatus.OK).getBody();
+
+        List<Instant> dates=new ArrayList<>();
+        List<Double> prices=new ArrayList<>();
+        List<Double> max_prices=new ArrayList<>();
+        List<Double> min_prices=new ArrayList<>();
+        dates.add(record.getTimestamp());
+        prices.add(record.getData().getPrice());
+        max_prices.add(record.getData().getMax_pr());
+        min_prices.add(record.getData().getMin_pr());
+
+        MetaData metaData=record.getMetaData();
+        String stateName=metaData.state();
+        String districtName=metaData.district();
+        String marketName=metaData.market();
+        String commodityName=metaData.commodity();
+        String varietyName=metaData.variety();
+        QueryResult qr=new QueryResult(dates,stateName,districtName, marketName, commodityName, varietyName,min_prices,max_prices,prices);
+        return qr;
+    }
     @GetMapping("/refresh")
     public ResponseEntity<Records> getDataRef() throws ParseException {
         ResponseEntity<Records> records = new ResponseEntity<>(serviceLayer.consumeAPIRef(),HttpStatus.OK);
