@@ -5,6 +5,7 @@ import com.example.MarketInsights.VO.PriceContainer;
 import com.example.MarketInsights.VO.Data;
 import com.example.MarketInsights.VO.Records;
 import com.example.MarketInsights.dao.MeasurementRepository;
+import com.example.MarketInsights.dto.BucketDataDto;
 import com.example.MarketInsights.model.Measurement;
 import com.example.MarketInsights.model.MetaData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,24 +35,26 @@ public class ServiceLayer {
     @Autowired
     private MeasurementRepository measurementRepository;
 
-    public Records consumeAPIRef() throws ParseException {
+    public Records consumeAPIRef(String state) throws ParseException {
         Records response = restTemplate.getForEntity(
-                url+"?api-key="+apiKey+"&format="+format+"&limit="+defaultLimit+"&filters[state]=Kerala",Records.class
+                url+"?api-key="+apiKey+"&format="+format+"&limit="+defaultLimit+"&filters[state]="+state,Records.class
         ).getBody();
         ArrayList<Data> records= (ArrayList<Data>) response.getRecords();
         List<Measurement> measurements = new ArrayList<>();
         for(Data record: records){
-//            String id=record.getState()+record.getDistrict()+record.getMarket()+record.getCommodity()+record.getVariety();
             String strDate = record.getArrival_date();
             String year=strDate.substring(6),month=strDate.substring(3,5),day=strDate.substring(0,2);
-            int price = Integer.parseInt(record.getModal_price());
-            int min_price=Integer.parseInt((record.getMin_price().equals("NA"))?record.getModal_price():record.getMin_price());
-            int max_price=Integer.parseInt((record.getMax_price().equals("NA"))?record.getModal_price():record.getMax_price());
+            double price = Double.parseDouble(record.getModal_price());
+            double min_price=Double.parseDouble((record.getMin_price().equals("NA"))?record.getModal_price():record.getMin_price());
+            double max_price=Double.parseDouble((record.getMax_price().equals("NA"))?record.getModal_price():record.getMax_price());
             MetaData metaData = new MetaData(record.getState(), record.getDistrict(), record.getMarket(), record.getCommodity(), record.getVariety());
-
             Instant timestamp = Instant.parse(year+"-"+month+"-"+day+"T18:00:00.00Z");
-            PriceContainer data=new PriceContainer(price,min_price,max_price);
-            measurements.add(new Measurement(timestamp, metaData, data));
+            List<Measurement> list=measurementRepository.findByMetaDataTime(metaData,timestamp);
+            if(list.size()==0){
+                PriceContainer data=new PriceContainer(price,min_price,max_price);
+                measurements.add(new Measurement(timestamp, metaData, data));
+                System.out.println(state);
+            }
         }
         measurementRepository.saveAll(measurements);
         return response;
@@ -89,8 +92,9 @@ public class ServiceLayer {
     }
 
     public List<Measurement> getAllPrice(String state,String district,String market,String commodity,String variety){
+//        System.out.println(variety);
         MetaData metaData = new MetaData(state,district,market,commodity,variety);
-        List<Measurement> mt=measurementRepository.findAllData(metaData);
+        List<Measurement> mt=measurementRepository.findAll(metaData);
         return mt;
     }
 
@@ -100,5 +104,52 @@ public class ServiceLayer {
         return mt;
     }
 
+    public List<Measurement> getDaysMeasurement(String state,String district,String market,String commodity,String variety,int days){
+        MetaData metaData = new MetaData(state,district,market,commodity,variety);
+        List<Measurement> mt=measurementRepository.findForDays(metaData, days);
+        return mt;
+    }
+
+    public List<BucketDataDto> getAvgMeasurement(String state,String district,String market,String commodity,String variety){
+        MetaData metaData = new MetaData(state,district,market,commodity,variety);
+        List<BucketDataDto> mt=measurementRepository.findAvg(metaData);
+        return mt;
+    }
+
+    public List<BucketDataDto> getAvgMeasurementInInterval(String start,String end,String state,String district,String market,String commodity,String variety){
+        MetaData metaData = new MetaData(state,district,market,commodity,variety);
+        Instant l = Instant.parse(start+"T18:00:00.00Z");
+        Instant r = Instant.parse(end+"T18:00:00.00Z");
+        List<BucketDataDto> mt=measurementRepository.findAvgInInterval(metaData,l,r);
+        return mt;
+    }
+
+    public List<BucketDataDto> getMinMeasurement(String state,String district,String market,String commodity,String variety){
+        MetaData metaData = new MetaData(state,district,market,commodity,variety);
+        List<BucketDataDto> mt=measurementRepository.findMin(metaData);
+        return mt;
+    }
+
+    public List<BucketDataDto> getMinMeasurementInInterval(String start,String end,String state,String district,String market,String commodity,String variety){
+        MetaData metaData = new MetaData(state,district,market,commodity,variety);
+        Instant l = Instant.parse(start+"T18:00:00.00Z");
+        Instant r = Instant.parse(end+"T18:00:00.00Z");
+        List<BucketDataDto> mt=measurementRepository.findMinInInterval(metaData,l,r);
+        return mt;
+    }
+
+    public List<BucketDataDto> getMaxMeasurement(String state,String district,String market,String commodity,String variety){
+        MetaData metaData = new MetaData(state,district,market,commodity,variety);
+        List<BucketDataDto> mt=measurementRepository.findMax(metaData);
+        return mt;
+    }
+
+    public List<BucketDataDto> getMaxMeasurementInInterval(String start,String end,String state,String district,String market,String commodity,String variety){
+        MetaData metaData = new MetaData(state,district,market,commodity,variety);
+        Instant l = Instant.parse(start+"T18:00:00.00Z");
+        Instant r = Instant.parse(end+"T18:00:00.00Z");
+        List<BucketDataDto> mt=measurementRepository.findMaxInInterval(metaData,l,r);
+        return mt;
+    }
 
 }

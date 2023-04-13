@@ -27,6 +27,17 @@ public interface MeasurementRepository extends MongoRepository<Measurement, Stri
             }""")
     List<Measurement> findInInterval(MetaData metaData, Instant timeGE, Instant timeLT);
 
+
+    @Query("""
+            {  'metaData.state': :#{#metaData.state()}
+               'metaData.district': :#{#metaData.district()}
+               'metaData.market': :#{#metaData.market()}
+               'metaData.commodity': :#{#metaData.commodity()}
+               'metaData.variety': :#{#metaData.variety()},
+                timestamp:          { $eq: ?1}
+            }""")
+    List<Measurement> findByMetaDataTime(MetaData metaData, Instant timeGE);
+
     @Query("""
             {  'metaData.state': :#{#metaData.state()}
                'metaData.district': :#{#metaData.district()}
@@ -34,15 +45,93 @@ public interface MeasurementRepository extends MongoRepository<Measurement, Stri
                'metaData.commodity': :#{#metaData.commodity()}
                'metaData.variety': :#{#metaData.variety()}
             }""")
-    List<Measurement> findAllData(MetaData metaData);
+    List<Measurement> findAll(MetaData metaData);
 
     @Aggregation({
             "{ $match: { 'metaData.state': :#{#metaData.state()}," +
-                    "    'metaData.district': :#{#metaData.district()}   } }",
+                    "    'metaData.district': :#{#metaData.district()}," +
+                    "    'metaData.market': :#{#metaData.market()}," +
+                    "    'metaData.commodity': :#{#metaData.commodity()}," +
+                    "    'metaData.variety': :#{#metaData.variety()}    } }",
             "{ $sort: { timestamp: -1 } }",
             "{ $limit: 1 }"})
     Measurement findLast(MetaData metaData);
 
+    @Aggregation({
+            "{ $match: { 'metaData.state': :#{#metaData.state()}," +
+                    "    'metaData.district': :#{#metaData.district()}," +
+                    "    'metaData.market': :#{#metaData.market()}," +
+                    "    'metaData.commodity': :#{#metaData.commodity()}," +
+                    "    'metaData.variety': :#{#metaData.variety()}    } }",
+            "{ $sort: { timestamp: -1 } }",
+            "{ $limit: ?1 }"})
+    List<Measurement> findForDays(MetaData metaData,int days);
+
+
+    @Aggregation({
+            "{ $match: { 'metaData.state': :#{#metaData.state()}," +
+                    "    'metaData.district': :#{#metaData.district()}," +
+                    "    'metaData.market': :#{#metaData.market()}," +
+                    "    'metaData.commodity': :#{#metaData.commodity()}," +
+                    "    'metaData.variety': :#{#metaData.variety()}," +
+                    "     timestamp:          { $gte: ?1, $lt: ?2 }      } } }",
+            "{ $group: { _id:0,average: { $avg: '$data.price'}} }"
+    })
+    List<BucketDataDto> findAvgInInterval(MetaData metaData,Instant timeGE,Instant timeLT);
+
+    @Aggregation({
+            "{ $match: { 'metaData.state': :#{#metaData.state()}," +
+                    "    'metaData.district': :#{#metaData.district()}," +
+                    "    'metaData.market': :#{#metaData.market()}," +
+                    "    'metaData.commodity': :#{#metaData.commodity()}," +
+                    "    'metaData.variety': :#{#metaData.variety()}    } }",
+            "{ $group: { _id:0,average: { $avg: '$data.price'}} }",
+    })
+    List<BucketDataDto> findAvg(MetaData metaData);
+
+    @Aggregation({
+            "{ $match: { 'metaData.state': :#{#metaData.state()}," +
+                    "    'metaData.district': :#{#metaData.district()}," +
+                    "    'metaData.market': :#{#metaData.market()}," +
+                    "    'metaData.commodity': :#{#metaData.commodity()}," +
+                    "    'metaData.variety': :#{#metaData.variety()},"+
+            "     timestamp:          { $gte: ?1, $lt: ?2 }      } } }",
+            "{ $group: { _id:0,minPrice:{$min:'$data.price'}}}"
+    })
+    List<BucketDataDto> findMinInInterval(MetaData metaData,Instant timeGE,Instant timeLT);
+    @Aggregation({
+            "{ $match: { 'metaData.state': :#{#metaData.state()}," +
+                    "    'metaData.district': :#{#metaData.district()}," +
+                    "    'metaData.market': :#{#metaData.market()}," +
+                    "    'metaData.commodity': :#{#metaData.commodity()}," +
+                    "    'metaData.variety': :#{#metaData.variety()}    } }",
+            "{ $group: { _id:0,minPrice:{$min:'$data.price'}}}"
+    })
+    List<BucketDataDto> findMin(MetaData metaData);
+
+
+
+    @Aggregation({
+            "{ $match: { 'metaData.state': :#{#metaData.state()}," +
+                    "    'metaData.district': :#{#metaData.district()}," +
+                    "    'metaData.market': :#{#metaData.market()}," +
+                    "    'metaData.commodity': :#{#metaData.commodity()}," +
+                    "    'metaData.variety': :#{#metaData.variety()},"+
+                    "     timestamp:          { $gte: ?1, $lt: ?2 }      } } }",
+            "{ $group: { _id:0,maxPrice:{$max:'$data.price'}}}"
+    })
+    List<BucketDataDto> findMaxInInterval(MetaData metaData,Instant timeGE,Instant timeLT);
+
+
+    @Aggregation({
+            "{ $match: { 'metaData.state': :#{#metaData.state()}," +
+                    "    'metaData.district': :#{#metaData.district()}," +
+                    "    'metaData.market': :#{#metaData.market()}," +
+                    "    'metaData.commodity': :#{#metaData.commodity()}," +
+                    "    'metaData.variety': :#{#metaData.variety()}    } }",
+            "{ $group: { _id:0,maxPrice:{$max:'$data.price'}}}"
+    })
+    List<BucketDataDto> findMax(MetaData metaData);
 
 //    @Aggregation({
 //            "{ $match: { 'metaData.state': :#{#metaData.state()}," +
