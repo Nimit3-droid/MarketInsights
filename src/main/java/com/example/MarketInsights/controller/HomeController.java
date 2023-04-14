@@ -1,6 +1,7 @@
 package com.example.MarketInsights.controller;
 
 
+import com.example.MarketInsights.VO.QueryInsights;
 import com.example.MarketInsights.VO.QueryResult;
 import com.example.MarketInsights.VO.Records;
 import com.example.MarketInsights.dao.MeasurementRepository;
@@ -17,8 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -70,9 +70,8 @@ public class HomeController {
         QueryResult qr=new QueryResult(dates,stateName,districtName, marketName, commodityName, varietyName,min_prices,max_prices,prices);
         return qr;
     }
-
     @GetMapping("/getAll/{state}/{district}/{market}/{commodity}/{variety}")
-    public QueryResult queryAllPriceList(@PathVariable String state,@PathVariable String district,@PathVariable String market,@PathVariable String commodity,@PathVariable String variety){
+    public QueryResult queryAll(@PathVariable String state,@PathVariable String district,@PathVariable String market,@PathVariable String commodity,@PathVariable String variety){
         List<Measurement> records = new ResponseEntity<List<Measurement>>(serviceLayer.getAllPrice(state,district,market,commodity,variety), HttpStatus.OK).getBody();
         if(records.size()==0){
             return new QueryResult();
@@ -199,6 +198,66 @@ public class HomeController {
         }
         return state + " added Successfully";
     }
+
+    @GetMapping("/getBestMarketPrice/{startDate}/{state}/{district}/{commodity}/{variety}")
+    public List<QueryInsights> getBestMarketAndPrice(@PathVariable String startDate,@PathVariable String state,@PathVariable String district,@PathVariable String commodity,@PathVariable String variety){
+        List<QueryInsights> result=new ResponseEntity<>(serviceLayer.getBestMarketPlace(startDate,state,district,commodity,variety),HttpStatus.OK).getBody();
+        return result;
+    }
+
+    @GetMapping("/getBestDistrictMarketPrice/{startDate}/{state}/{commodity}/{variety}")
+    public List<QueryInsights> getBestDistrictMarketAndPrice(@PathVariable String startDate,@PathVariable String state,@PathVariable String commodity,@PathVariable String variety){
+        List<QueryInsights> result=new ResponseEntity<>(serviceLayer.getBestDistrictMarketPlace(startDate,state,commodity,variety),HttpStatus.OK).getBody();
+        return result;
+    }
+
+
+    @GetMapping("/getBestTimeToSell/{state}/{district}/{market}/{commodity}/{variety}")
+    public HashMap<String,Double> getBestTimeToSell(@PathVariable String state,@PathVariable String district,@PathVariable String market,@PathVariable String commodity,@PathVariable String variety){
+        List<Measurement> records = new ResponseEntity<List<Measurement>>(serviceLayer.getAllPrice(state,district,market,commodity,variety), HttpStatus.OK).getBody();
+        HashMap<String,Double> months=new HashMap<>();
+        HashMap<String,Double> frequency=new HashMap<>();
+        if(records.size()==0){
+            return months;
+        }
+        List<Instant> dates=new ArrayList<>();
+        List<Double> prices=new ArrayList<>();
+        List<Double> max_prices=new ArrayList<>();
+        List<Double> min_prices=new ArrayList<>();
+
+
+        for(Measurement measure:records){
+            dates.add(measure.getTimestamp());
+            prices.add(measure.getData().getPrice());
+            max_prices.add(measure.getData().getMax_pr());
+            min_prices.add(measure.getData().getMin_pr());
+
+            String date=measure.getTimestamp().toString();
+            String month=date.substring(5,7);
+            double price = measure.getData().getPrice();
+
+            if(!months.containsKey(month)){
+                months.putIfAbsent(month,price);
+                frequency.putIfAbsent(month,1.0);
+            }else{
+                months.put(month, months.get(months)+price);
+                frequency.put(month,frequency.get(month)+1.0);
+            }
+        }
+        for(Map.Entry<String,Double> entry:frequency.entrySet()){
+            String month=entry.getKey();
+            months.put(month, months.get(month)/frequency.get(month));
+        }
+        System.out.println(months);
+        MetaData metaData=records.get(0).getMetaData();
+        String stateName=metaData.state();
+        String districtName=metaData.district();
+        String marketName=metaData.market();
+        String commodityName=metaData.commodity();
+        String varietyName=metaData.variety();
+        QueryResult qr=new QueryResult(dates,stateName,districtName, marketName, commodityName, varietyName,min_prices,max_prices,prices);
+        return months;
+    }
     @GetMapping("/refresh")
     public ArrayList<ResponseEntity<Records>> getDataRef() throws ParseException {
         List<State> states=stateRepository.findAll();
@@ -210,4 +269,30 @@ public class HomeController {
         return response;
     }
 
+    //test
+    @GetMapping("/testQuery/{startDate}/{endDate}/{state}")
+    public QueryResult testQuery(@PathVariable String startDate,@PathVariable String endDate,@PathVariable String state){
+        List<Measurement> records = new ResponseEntity<List<Measurement>>(serviceLayer.getIntervals(startDate,endDate,state), HttpStatus.OK).getBody();
+        if(records.size()==0){
+            return new QueryResult();
+        }
+        List<Instant> dates=new ArrayList<>();
+        List<Double> prices=new ArrayList<>();
+        List<Double> max_prices=new ArrayList<>();
+        List<Double> min_prices=new ArrayList<>();
+        for(Measurement measure:records){
+            dates.add(measure.getTimestamp());
+            prices.add(measure.getData().getPrice());
+            max_prices.add(measure.getData().getMax_pr());
+            min_prices.add(measure.getData().getMin_pr());
+        }
+        MetaData metaData=records.get(0).getMetaData();
+        String stateName=metaData.state();
+        String districtName=metaData.district();
+        String marketName=metaData.market();
+        String commodityName=metaData.commodity();
+        String varietyName=metaData.variety();
+        QueryResult qr=new QueryResult(dates,stateName,districtName, marketName, commodityName, varietyName,min_prices,max_prices,prices);
+        return qr;
+    }
 }

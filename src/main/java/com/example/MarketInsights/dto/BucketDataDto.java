@@ -6,7 +6,5 @@ public record BucketDataDto(
         Double average,
         Double minPrice,
         Double maxPrice
-
-
 ) {
 }

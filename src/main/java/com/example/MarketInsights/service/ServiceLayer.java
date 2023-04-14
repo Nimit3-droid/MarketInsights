@@ -3,6 +3,7 @@ package com.example.MarketInsights.service;
 
 import com.example.MarketInsights.VO.PriceContainer;
 import com.example.MarketInsights.VO.Data;
+import com.example.MarketInsights.VO.QueryInsights;
 import com.example.MarketInsights.VO.Records;
 import com.example.MarketInsights.dao.MeasurementRepository;
 import com.example.MarketInsights.dto.BucketDataDto;
@@ -53,7 +54,6 @@ public class ServiceLayer {
             if(list.size()==0){
                 PriceContainer data=new PriceContainer(price,min_price,max_price);
                 measurements.add(new Measurement(timestamp, metaData, data));
-                System.out.println(state);
             }
         }
         measurementRepository.saveAll(measurements);
@@ -149,6 +149,38 @@ public class ServiceLayer {
         Instant l = Instant.parse(start+"T18:00:00.00Z");
         Instant r = Instant.parse(end+"T18:00:00.00Z");
         List<BucketDataDto> mt=measurementRepository.findMaxInInterval(metaData,l,r);
+        return mt;
+    }
+    public List<QueryInsights> getBestMarketPlace(String start,String state,String district,String commodity,String variety){
+        MetaData metaData = new MetaData(state,district,"",commodity,variety);
+        Instant date = Instant.parse(start+"T18:00:00.00Z");
+        List<Measurement> mt=measurementRepository.findMarket(metaData, date);
+        List<QueryInsights> markets=new ArrayList<>();
+        for(Measurement me:mt){
+            markets.add(new QueryInsights(me.getMetaData().market(),me.getData().getPrice()));
+        }
+        return markets;
+    }
+
+    public List<QueryInsights> getBestDistrictMarketPlace(String start,String state,String commodity,String variety){
+        MetaData metaData = new MetaData(state,"","",commodity,variety);
+        Instant date = Instant.parse(start+"T18:00:00.00Z");
+        List<Measurement> mt=measurementRepository.findDistrictMarket(metaData, date);
+        List<QueryInsights> markets=new ArrayList<>();
+        for(Measurement me:mt){
+            String name=me.getMetaData().district()+"-"+me.getMetaData().market();
+            double price=me.getData().getPrice();
+            markets.add(new QueryInsights(name,price));
+        }
+        return markets;
+    }
+
+    //test
+    public List<Measurement> getIntervals(String start,String end,String state){
+        MetaData metaData = new MetaData(state,"","","","");
+        Instant l = Instant.parse(start+"T18:00:00.00Z");
+        Instant r = Instant.parse(end+"T18:00:00.00Z");
+        List<Measurement> mt=measurementRepository.findInIntervalTest(metaData, l,r);
         return mt;
     }
 

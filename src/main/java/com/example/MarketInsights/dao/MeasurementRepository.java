@@ -18,6 +18,12 @@ public interface MeasurementRepository extends MongoRepository<Measurement, Stri
 
 
     @Query("""
+            {  'metaData.state': :#{#metaData.state()},
+                timestamp:          { $gte: ?1, $lt: ?2 }
+            }""")
+    List<Measurement> findInIntervalTest(MetaData metaData, Instant timeGE, Instant timeLT);
+
+    @Query("""
             {  'metaData.state': :#{#metaData.state()}
                'metaData.district': :#{#metaData.district()}
                'metaData.market': :#{#metaData.market()}
@@ -46,6 +52,23 @@ public interface MeasurementRepository extends MongoRepository<Measurement, Stri
                'metaData.variety': :#{#metaData.variety()}
             }""")
     List<Measurement> findAll(MetaData metaData);
+    @Aggregation({
+            "{ $match: { 'metaData.state': :#{#metaData.state()}," +
+                    "    'metaData.district': :#{#metaData.district()}," +
+                    "    'metaData.commodity': :#{#metaData.commodity()}," +
+                    "    'metaData.variety': :#{#metaData.variety()},"+
+                    "     timestamp:          { $eq: ?1}} }",
+            "{ $sort: { 'data.price': 1 } }"
+    })
+    List<Measurement> findMarket(MetaData metaData,Instant timeGT);
+    @Aggregation({
+            "{ $match: { 'metaData.state': :#{#metaData.state()}," +
+                    "    'metaData.commodity': :#{#metaData.commodity()}," +
+                    "    'metaData.variety': :#{#metaData.variety()},"+
+                    "     timestamp:          { $eq: ?1}} }",
+            "{ $sort: { 'data.price': 1 } }"
+    })
+    List<Measurement> findDistrictMarket(MetaData metaData,Instant timeGT);
 
     @Aggregation({
             "{ $match: { 'metaData.state': :#{#metaData.state()}," +
