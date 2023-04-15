@@ -43,6 +43,7 @@ public class HomeController {
         return "Home";
     }
 
+    //2022-11-02 [---)
     @GetMapping("/getInterval/{startDate}/{endDate}/{state}/{district}/{market}/{commodity}/{variety}")
     public QueryResult queryInRange(@PathVariable String startDate,@PathVariable String endDate,@PathVariable String state,@PathVariable String district,@PathVariable String market,@PathVariable String commodity,@PathVariable String variety){
         List<Measurement> records = new ResponseEntity<List<Measurement>>(serviceLayer.getQueryInRange(startDate,endDate,state,district,market,commodity,variety), HttpStatus.OK).getBody();
@@ -130,7 +131,6 @@ public class HomeController {
         if(records.size()==0){
             return new QueryResult();
         }
-        System.out.println(state);
         List<Instant> dates=new ArrayList<>();
         List<Double> prices=new ArrayList<>();
         List<Double> max_prices=new ArrayList<>();
@@ -156,7 +156,6 @@ public class HomeController {
         List<BucketDataDto> records = new ResponseEntity<>(serviceLayer.getAvgMeasurement(state,district,market,commodity,variety), HttpStatus.OK).getBody();
         return records;
     }
-
 
     @GetMapping("/getAvgInterval/{startDate}/{endDate}/{state}/{district}/{market}/{commodity}/{variety}")
     public List<BucketDataDto> getAvgInInterval(@PathVariable String startDate,@PathVariable String endDate,@PathVariable String state,@PathVariable String district,@PathVariable String market,@PathVariable String commodity,@PathVariable String variety) {
@@ -210,12 +209,23 @@ public class HomeController {
         return result;
     }
 
-
     @GetMapping("/getBestTimeToSell/{state}/{district}/{market}/{commodity}/{variety}")
     public HashMap<String,Double> getBestTimeToSell(@PathVariable String state,@PathVariable String district,@PathVariable String market,@PathVariable String commodity,@PathVariable String variety){
         List<Measurement> records = new ResponseEntity<List<Measurement>>(serviceLayer.getAllPrice(state,district,market,commodity,variety), HttpStatus.OK).getBody();
         HashMap<String,Double> months=new HashMap<>();
         HashMap<String,Double> frequency=new HashMap<>();
+        months.put("10",0.0);
+        frequency.put("10",0.0);
+        for(int j=0;j<2;j++){
+            for(int i=1;i<=9;i++){
+                String mth=j+""+i;
+                if(months.size()<12){
+                    months.put(mth,0.0);
+                    frequency.put(mth,0.0);
+                }
+            }
+        }
+
         if(records.size()==0){
             return months;
         }
@@ -234,27 +244,14 @@ public class HomeController {
             String date=measure.getTimestamp().toString();
             String month=date.substring(5,7);
             double price = measure.getData().getPrice();
+            months.put(month, months.get(month)+price);
+            frequency.put(month,frequency.get(month)+1.0);
 
-            if(!months.containsKey(month)){
-                months.putIfAbsent(month,price);
-                frequency.putIfAbsent(month,1.0);
-            }else{
-                months.put(month, months.get(months)+price);
-                frequency.put(month,frequency.get(month)+1.0);
-            }
         }
         for(Map.Entry<String,Double> entry:frequency.entrySet()){
             String month=entry.getKey();
-            months.put(month, months.get(month)/frequency.get(month));
+            if(frequency.get(month)!=0.0)months.put(month, months.get(month)/frequency.get(month));
         }
-//        System.out.println(months);
-        MetaData metaData=records.get(0).getMetaData();
-        String stateName=metaData.state();
-        String districtName=metaData.district();
-        String marketName=metaData.market();
-        String commodityName=metaData.commodity();
-        String varietyName=metaData.variety();
-        QueryResult qr=new QueryResult(dates,stateName,districtName, marketName, commodityName, varietyName,min_prices,max_prices,prices);
         return months;
     }
     @GetMapping("/refresh")
