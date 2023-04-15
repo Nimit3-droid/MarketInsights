@@ -23,6 +23,41 @@ public interface MeasurementRepository extends MongoRepository<Measurement, Stri
             }""")
     List<Measurement> findInIntervalTest(MetaData metaData, Instant timeGE, Instant timeLT);
 
+    @Aggregation({
+            "{ $match: { 'metaData.state': :#{#metaData.state()}} }",
+            "{$group:{_id:{district:'$metaData.district'}}}",
+            "{$sort:{_id:1}}"
+    })
+    List<Measurement> findDistinctDistrictsByState(MetaData metaData);
+
+    @Aggregation({
+            "{ $match: { 'metaData.state': :#{#metaData.state()}," + "  'metaData.district': :#{#metaData.district()}} }",
+            "{$group:{_id:{market:'$metaData.market'}}}",
+            "{$sort:{_id:1}}"
+    })
+    List<Measurement> findDistinctMarketsByDistrict(MetaData metaData);
+
+    @Aggregation({
+            "{ $match: { 'metaData.state': :#{#metaData.state()}," +
+                    "    'metaData.district': :#{#metaData.district()}," +
+                    "    'metaData.market': :#{#metaData.market()} } }",
+            "{$group:{_id:{commodity:'$metaData.commodity'}}}",
+            "{$sort:{_id:1}}"
+    })
+    List<Measurement> findDistinctCommodityByMarket(MetaData metaData);
+
+    @Aggregation({
+            "{ $match: { 'metaData.state': :#{#metaData.state()}," +
+                    "    'metaData.district': :#{#metaData.district()}," +
+                    "    'metaData.market': :#{#metaData.market()},"+
+                    "   'metaData.commodity': :#{#metaData.commodity()}} }",
+            "{$group:{_id:{variety:'$metaData.variety'}}}",
+            "{$sort:{_id:1}}"
+    })
+    List<Measurement> findDistinctVarietyByCommodity(MetaData metaData);
+
+
+
     @Query("""
             {  'metaData.state': :#{#metaData.state()}
                'metaData.district': :#{#metaData.district()}

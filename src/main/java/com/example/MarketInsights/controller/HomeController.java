@@ -4,7 +4,6 @@ package com.example.MarketInsights.controller;
 import com.example.MarketInsights.VO.QueryInsights;
 import com.example.MarketInsights.VO.QueryResult;
 import com.example.MarketInsights.VO.Records;
-import com.example.MarketInsights.dao.MeasurementRepository;
 import com.example.MarketInsights.dao.StateRepository;
 import com.example.MarketInsights.dto.BucketDataDto;
 import com.example.MarketInsights.model.Measurement;
@@ -248,7 +247,7 @@ public class HomeController {
             String month=entry.getKey();
             months.put(month, months.get(month)/frequency.get(month));
         }
-        System.out.println(months);
+//        System.out.println(months);
         MetaData metaData=records.get(0).getMetaData();
         String stateName=metaData.state();
         String districtName=metaData.district();
@@ -267,6 +266,27 @@ public class HomeController {
             response.add(records);
         }
         return response;
+    }
+
+    @GetMapping("/getDistricts/{state}")
+    public List<Measurement> getDistricts(@PathVariable String state){
+        List<Measurement> result=new ResponseEntity<>(serviceLayer.getDistinctDistricts(state),HttpStatus.OK).getBody();
+        return result;
+    }
+    @GetMapping("/getMarkets/{state}/{district}")
+    public List<Measurement> getMarkets(@PathVariable String state,@PathVariable String district){
+        List<Measurement> result=new ResponseEntity<>(serviceLayer.getDistinctMarkets(state,district),HttpStatus.OK).getBody();
+        return result;
+    }
+    @GetMapping("/getCommodity/{state}/{district}/{market}")
+    public List<Measurement> getCommodity(@PathVariable String state,@PathVariable String district,@PathVariable String market){
+        List<Measurement> result=new ResponseEntity<>(serviceLayer.getDistinctCommodity(state,district,market),HttpStatus.OK).getBody();
+        return result;
+    }
+    @GetMapping("/getVariety/{state}/{district}/{market}/{commodity}")
+    public List<Measurement> getCommodity(@PathVariable String state,@PathVariable String district,@PathVariable String market,@PathVariable String commodity){
+        List<Measurement> result=new ResponseEntity<>(serviceLayer.getDistinctVariety(state,district,market,commodity),HttpStatus.OK).getBody();
+        return result;
     }
 
     //test
@@ -295,4 +315,6 @@ public class HomeController {
         QueryResult qr=new QueryResult(dates,stateName,districtName, marketName, commodityName, varietyName,min_prices,max_prices,prices);
         return qr;
     }
+
+
 }

@@ -14,11 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
@@ -173,6 +171,27 @@ public class ServiceLayer {
             markets.add(new QueryInsights(name,price));
         }
         return markets;
+    }
+
+    public List<Measurement> getDistinctDistricts(String state){
+        MetaData metaData = new MetaData(state,"","","","");
+        List<Measurement> mt=measurementRepository.findDistinctDistrictsByState(metaData);
+        return mt;
+    }
+    public List<Measurement> getDistinctMarkets(String state,String district){
+        MetaData metaData = new MetaData(state,district,"","","");
+        List<Measurement> mt=measurementRepository.findDistinctMarketsByDistrict(metaData);
+        return mt;
+    }
+    public List<Measurement> getDistinctCommodity(String state,String district,String market){
+        MetaData metaData = new MetaData(state,district,market,"","");
+        List<Measurement> mt=measurementRepository.findDistinctCommodityByMarket(metaData);
+        return mt;
+    }
+    public List<Measurement> getDistinctVariety(String state,String district,String market,String commodity){
+        MetaData metaData = new MetaData(state,district,market,commodity,"");
+        List<Measurement> mt=measurementRepository.findDistinctVarietyByCommodity(metaData);
+        return mt;
     }
 
     //test
