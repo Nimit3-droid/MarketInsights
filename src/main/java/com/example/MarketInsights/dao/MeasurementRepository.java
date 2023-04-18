@@ -2,6 +2,8 @@ package com.example.MarketInsights.dao;
 
 
 
+import com.example.MarketInsights.VO.Commodities;
+import com.example.MarketInsights.VO.RegionQueries;
 import com.example.MarketInsights.dto.BucketDataDto;
 import com.example.MarketInsights.model.Measurement;
 import com.example.MarketInsights.model.MetaData;
@@ -28,14 +30,24 @@ public interface MeasurementRepository extends MongoRepository<Measurement, Stri
             "{$group:{_id:{district:'$metaData.district'}}}",
             "{$sort:{_id:1}}"
     })
-    List<Measurement> findDistinctDistrictsByState(MetaData metaData);
+    List<RegionQueries> findDistinctDistrictsByState(MetaData metaData);
 
     @Aggregation({
             "{ $match: { 'metaData.state': :#{#metaData.state()}," + "  'metaData.district': :#{#metaData.district()}} }",
             "{$group:{_id:{market:'$metaData.market'}}}",
             "{$sort:{_id:1}}"
     })
-    List<Measurement> findDistinctMarketsByDistrict(MetaData metaData);
+    List<RegionQueries> findDistinctMarketsByDistrict(MetaData metaData);
+
+    @Aggregation({
+            "{ $match: { 'metaData.state': :#{#metaData.state()}," +
+                    "    'metaData.district': :#{#metaData.district()} }}",
+            "{ $sort: { timestamp: -1 } }",
+            "{$group: {_id: '$metaData.market', detail: {$addToSet:{commodity:'$metaData.commodity',variety:'$metaData.variety'}},timestamp: {$first:'$timestamp'}}},",
+//            "{ $sort: { timestamp: -1 } }",
+            "{ $project: { detail: 1, _id: 1 } }",
+    })
+    List<Commodities> findAllByDistrict(MetaData metaData);
 
     @Aggregation({
             "{ $match: { 'metaData.state': :#{#metaData.state()}," +
@@ -44,7 +56,7 @@ public interface MeasurementRepository extends MongoRepository<Measurement, Stri
             "{$group:{_id:{commodity:'$metaData.commodity'}}}",
             "{$sort:{_id:1}}"
     })
-    List<Measurement> findDistinctCommodityByMarket(MetaData metaData);
+    List<RegionQueries> findDistinctCommodityByMarket(MetaData metaData);
 
     @Aggregation({
             "{ $match: { 'metaData.state': :#{#metaData.state()}," +
@@ -54,7 +66,7 @@ public interface MeasurementRepository extends MongoRepository<Measurement, Stri
             "{$group:{_id:{variety:'$metaData.variety'}}}",
             "{$sort:{_id:1}}"
     })
-    List<Measurement> findDistinctVarietyByCommodity(MetaData metaData);
+    List<RegionQueries> findDistinctVarietyByCommodity(MetaData metaData);
 
 
 

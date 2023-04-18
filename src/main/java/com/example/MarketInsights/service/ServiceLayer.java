@@ -1,10 +1,7 @@
 package com.example.MarketInsights.service;
 
 
-import com.example.MarketInsights.VO.PriceContainer;
-import com.example.MarketInsights.VO.Data;
-import com.example.MarketInsights.VO.QueryInsights;
-import com.example.MarketInsights.VO.Records;
+import com.example.MarketInsights.VO.*;
 import com.example.MarketInsights.dao.MeasurementRepository;
 import com.example.MarketInsights.dto.BucketDataDto;
 import com.example.MarketInsights.model.Measurement;
@@ -23,6 +20,8 @@ import java.util.List;
 @Service
 public class ServiceLayer {
     private final RestTemplate restTemplate;
+
+    //keys and url
     String url="https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
     String apiKey="579b464db66ec23bdd0000015709af7f45e048694fedae861885947c";
     String format="json";
@@ -61,24 +60,6 @@ public class ServiceLayer {
 
 
 
-    public void testAPI(){
-        MetaData metaData = new MetaData("Raj", "Jai","Tonk","Apple","Large");
-
-        // create 1000 measurements from 1 to 1000
-        List<Measurement> measurements = new ArrayList<>(5);
-
-        Instant timestamp = Instant.parse("2022-11-03T18:00:00.00Z");
-        float value = 100000;
-
-        for (int i = 5; i > 0; i--) {
-            PriceContainer data=new PriceContainer(i,i-10,i+10);
-            measurements.add(new Measurement(timestamp, metaData, data));
-            timestamp = timestamp.plus(24, ChronoUnit.HOURS);
-            value--;
-        }
-
-        measurementRepository.saveAll(measurements);
-    }
 
     public List<Measurement> getQueryInRange(String start,String end,String state,String district,String market,String commodity,String variety){
         MetaData metaData = new MetaData(state,district,market,commodity,variety);
@@ -173,24 +154,30 @@ public class ServiceLayer {
         return markets;
     }
 
-    public List<Measurement> getDistinctDistricts(String state){
+    public List<RegionQueries> getDistinctDistricts(String state){
         MetaData metaData = new MetaData(state,"","","","");
-        List<Measurement> mt=measurementRepository.findDistinctDistrictsByState(metaData);
+        List<RegionQueries> mt=measurementRepository.findDistinctDistrictsByState(metaData);
         return mt;
     }
-    public List<Measurement> getDistinctMarkets(String state,String district){
+    public List<RegionQueries> getDistinctMarkets(String state,String district){
         MetaData metaData = new MetaData(state,district,"","","");
-        List<Measurement> mt=measurementRepository.findDistinctMarketsByDistrict(metaData);
+        List<RegionQueries> mt=measurementRepository.findDistinctMarketsByDistrict(metaData);
         return mt;
     }
-    public List<Measurement> getDistinctCommodity(String state,String district,String market){
+    public List<RegionQueries> getDistinctCommodity(String state,String district,String market){
         MetaData metaData = new MetaData(state,district,market,"","");
-        List<Measurement> mt=measurementRepository.findDistinctCommodityByMarket(metaData);
+        List<RegionQueries> mt=measurementRepository.findDistinctCommodityByMarket(metaData);
         return mt;
     }
-    public List<Measurement> getDistinctVariety(String state,String district,String market,String commodity){
+    public List<RegionQueries> getDistinctVariety(String state,String district,String market,String commodity){
         MetaData metaData = new MetaData(state,district,market,commodity,"");
-        List<Measurement> mt=measurementRepository.findDistinctVarietyByCommodity(metaData);
+        List<RegionQueries> mt=measurementRepository.findDistinctVarietyByCommodity(metaData);
+        return mt;
+    }
+
+    public List<Commodities> getAllDataInDistrict(String state,String district){
+        MetaData metaData = new MetaData(state,district,"","","");
+        List<Commodities> mt=measurementRepository.findAllByDistrict(metaData);
         return mt;
     }
 
@@ -202,5 +189,7 @@ public class ServiceLayer {
         List<Measurement> mt=measurementRepository.findInIntervalTest(metaData, l,r);
         return mt;
     }
+
+
 
 }
