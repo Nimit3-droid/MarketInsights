@@ -44,7 +44,7 @@ public interface MeasurementRepository extends MongoRepository<Measurement, Stri
                     "    'metaData.district': :#{#metaData.district()} }}",
             "{ $sort: { timestamp: -1 } }",
             "{$group: {_id: '$metaData.market', detail: {$addToSet:{commodity:'$metaData.commodity',variety:'$metaData.variety'}},timestamp: {$first:'$timestamp'}}},",
-//            "{ $sort: { timestamp: -1 } }",
+            "{ $sort: { _id: 1 } }",
             "{ $project: { detail: 1, _id: 1 } }",
     })
     List<Commodities> findAllByDistrict(MetaData metaData);

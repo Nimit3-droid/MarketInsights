@@ -126,7 +126,7 @@ public class HomeController {
         if(records.size()==0){
             return new QueryResult();
         }
-        System.out.println(state);
+//        System.out.println(state);
         List<Instant> dates=new ArrayList<>();
         List<Double> prices=new ArrayList<>();
         List<Double> max_prices=new ArrayList<>();
