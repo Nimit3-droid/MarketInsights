@@ -19,11 +19,11 @@ import java.util.List;
 public interface MeasurementRepository extends MongoRepository<Measurement, String> {
 
 
-    @Query("""
-            {  'metaData.state': :#{#metaData.state()},
-                timestamp:          { $gte: ?1, $lt: ?2 }
-            }""")
-    List<Measurement> findInIntervalTest(MetaData metaData, Instant timeGE, Instant timeLT);
+//    @Query("""
+//            {  'metaData.state': :#{#metaData.state()},
+//                timestamp:          { $gte: ?1, $lt: ?2 }
+//            }""")
+//    List<Measurement> findInIntervalTest(MetaData metaData, Instant timeGE, Instant timeLT);
 
     @Aggregation({
             "{ $match: { 'metaData.state': :#{#metaData.state()}} }",

@@ -12,7 +12,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.text.ParseException;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -182,13 +181,13 @@ public class ServiceLayer {
     }
 
     //test
-    public List<Measurement> getIntervals(String start,String end,String state){
-        MetaData metaData = new MetaData(state,"","","","");
-        Instant l = Instant.parse(start+"T18:00:00.00Z");
-        Instant r = Instant.parse(end+"T18:00:00.00Z");
-        List<Measurement> mt=measurementRepository.findInIntervalTest(metaData, l,r);
-        return mt;
-    }
+//    public List<Measurement> getIntervals(String start,String end,String state){
+//        MetaData metaData = new MetaData(state,"","","","");
+//        Instant l = Instant.parse(start+"T18:00:00.00Z");
+//        Instant r = Instant.parse(end+"T18:00:00.00Z");
+//        List<Measurement> mt=measurementRepository.findInIntervalTest(metaData, l,r);
+//        return mt;
+//    }
 
 
 
