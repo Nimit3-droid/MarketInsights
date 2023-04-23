@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 
 
 @RestController
+@CrossOrigin(origins ="${my.property}")
 @RequestMapping("/import-json")
 public class ImportJsonController {
     @Autowired
