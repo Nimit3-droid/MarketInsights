@@ -24,6 +24,8 @@ public interface MeasurementRepository extends MongoRepository<Measurement, Stri
 //                timestamp:          { $gte: ?1, $lt: ?2 }
 //            }""")
 //    List<Measurement> findInIntervalTest(MetaData metaData, Instant timeGE, Instant timeLT);
+@Query("{timestamp:{ $eq: ?0 }}")
+List<Measurement> findAllByDate(Instant time);
 
     @Aggregation({
             "{ $match: { 'metaData.state': :#{#metaData.state()}} }",

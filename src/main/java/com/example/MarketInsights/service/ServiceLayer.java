@@ -32,12 +32,13 @@ public class ServiceLayer {
     @Autowired
     private MeasurementRepository measurementRepository;
 
-    public Records consumeAPIRef(String state) throws ParseException {
+    public String consumeAPIRef(String state) throws ParseException {
         Records response = restTemplate.getForEntity(
                 url+"?api-key="+apiKey+"&format="+format+"&limit="+defaultLimit+"&filters[state]="+state,Records.class
         ).getBody();
         ArrayList<Data> records= (ArrayList<Data>) response.getRecords();
         List<Measurement> measurements = new ArrayList<>();
+        int totalCount=0;
         for(Data record: records){
             String strDate = record.getArrival_date();
             String year=strDate.substring(6),month=strDate.substring(3,5),day=strDate.substring(0,2);
@@ -48,12 +49,13 @@ public class ServiceLayer {
             Instant timestamp = Instant.parse(year+"-"+month+"-"+day+"T18:00:00.00Z");
             List<Measurement> list=measurementRepository.findByMetaDataTime(metaData,timestamp);
             if(list.size()==0){
+                totalCount+=1;
                 PriceContainer data=new PriceContainer(price,min_price,max_price);
                 measurements.add(new Measurement(timestamp, metaData, data));
             }
         }
-        measurementRepository.saveAll(measurements);
-        return response;
+        if(measurements.size()!=0)measurementRepository.saveAll(measurements);
+        return totalCount+"/"+response.getTotal() + " added Successfully to "+state;
     }
 
 
@@ -178,6 +180,12 @@ public class ServiceLayer {
         MetaData metaData = new MetaData(state,district,"","","");
         List<Commodities> mt=measurementRepository.findAllByDistrict(metaData);
         return mt;
+    }
+
+    public List<Measurement> getAllAdded(String start) {
+        Instant l = Instant.parse(start+"T18:00:00.00Z");
+        List<Measurement> list=measurementRepository.findAllByDate(l);
+        return list;
     }
 
     //test

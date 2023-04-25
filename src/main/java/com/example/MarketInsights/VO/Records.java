@@ -12,6 +12,7 @@ import java.util.List;
 public class Records {
     private String created;
     private String updated;
+    private int total;
 
     private List<Data> records;
 

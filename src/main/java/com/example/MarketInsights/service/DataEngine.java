@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,10 +19,11 @@ public class DataEngine {
     }
 
 //    @Scheduled(cron = "${cron.expression}")
-    @Scheduled(fixedRateString = "${fixedRate.in.milliseconds}")
+    @Scheduled(fixedRateString = "${fixedRate}")
     @Async
     public void refreshMarketData() throws ParseException {
-        homeController.getDataRef();
+        ArrayList<String> list = homeController.getDataRef();
+        System.out.println(list);
         System.out.println("Data Refreshed");
     }
 }

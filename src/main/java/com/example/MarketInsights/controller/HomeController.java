@@ -30,7 +30,7 @@ public class HomeController {
 
     @Autowired
     private StateRepository stateRepository;
-    @GetMapping("/")
+    @GetMapping("")
     public String getDataLimit(){
         return "Home";
     }
@@ -86,6 +86,7 @@ public class HomeController {
      */
     @GetMapping("/getAll")
     public QueryResult queryAll(@RequestParam String state,@RequestParam String district,@RequestParam String market,@RequestParam String commodity,@RequestParam String variety){
+        //multi
         List<Measurement> records = new ResponseEntity<List<Measurement>>(serviceLayer.getAllPrice(state,district,market,commodity,variety), HttpStatus.OK).getBody();
         if(records.size()==0){
             return new QueryResult();
@@ -290,11 +291,13 @@ public class HomeController {
     public String addState(@RequestBody String state) throws ParseException {
         try{
             stateRepository.insert(new State(state));
+            String count=serviceLayer.consumeAPIRef(state);
+            return count;
         }
         catch (Exception exception) {
             return state + " Already Exists";
         }
-        return state + " added Successfully";
+//        return state + " added Successfully";
     }
 
     /**
@@ -387,14 +390,14 @@ public class HomeController {
      * @throws ParseException
      */
     @GetMapping("/refresh")
-    public ArrayList<ResponseEntity<Records>> getDataRef() throws ParseException {
+    public ArrayList<String> getDataRef() throws ParseException {
         List<State> states=stateRepository.findAll();
-        ArrayList<ResponseEntity<Records>> response=new ArrayList<>();
+        ArrayList<String> res=new ArrayList<>();
         for(State state : states){
-            ResponseEntity<Records> records = new ResponseEntity<>(serviceLayer.consumeAPIRef(state.getState()),HttpStatus.OK);
-            response.add(records);
+            String count=serviceLayer.consumeAPIRef(state.getState());
+            res.add(count);
         }
-        return response;
+        return res;
     }
 
     /**
@@ -467,6 +470,12 @@ public class HomeController {
     public List<Commodities> getAllCommodities(@RequestParam String state,@RequestParam String district){
         List<Commodities> result=new ResponseEntity<>(serviceLayer.getAllDataInDistrict(state,district),HttpStatus.OK).getBody();
         return result;
+    }
+
+    @GetMapping("/getAllAdded")
+    public List<Measurement> getAllAdded(@RequestParam String startDate){
+        List<Measurement> records = new ResponseEntity<List<Measurement>>(serviceLayer.getAllAdded(startDate), HttpStatus.OK).getBody();
+        return records;
     }
 
 
