@@ -39,6 +39,7 @@ public class ServiceLayer {
         ArrayList<Data> records= (ArrayList<Data>) response.getRecords();
         List<Measurement> measurements = new ArrayList<>();
         int totalCount=0;
+        int alreadyAddedCount =0;
         for(Data record: records){
             String strDate = record.getArrival_date();
             String year=strDate.substring(6),month=strDate.substring(3,5),day=strDate.substring(0,2);
@@ -52,10 +53,19 @@ public class ServiceLayer {
                 totalCount+=1;
                 PriceContainer data=new PriceContainer(price,min_price,max_price);
                 measurements.add(new Measurement(timestamp, metaData, data));
+            }else{
+                alreadyAddedCount+=list.size();
+//                if(list.size()>1){
+//                    for(Measurement m:list){
+//                        System.out.println(m.getMetaData() +" "+m.getTimestamp()+" ["+m.getData().getPrice() +", " +m.getData().getMin_pr()+", "+m.getData().getMax_pr()+"]");
+//                    }
+//                    System.out.println();
+//                }
             }
         }
         if(measurements.size()!=0)measurementRepository.saveAll(measurements);
-        return totalCount+"/"+response.getTotal() + " added Successfully to "+state;
+
+        return totalCount+"/"+response.getTotal() + " added Successfully to "+state + " and Already present : "+alreadyAddedCount+"/"+response.getTotal();
     }
 
 
